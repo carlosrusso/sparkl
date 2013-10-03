@@ -1,11 +1,11 @@
 /********************************** Project namespace *******************************************/
-var sparkl = {};
+var sparkl = sparkl || {};
 (function(myself){
 
   _settings = {
     expressions: {
       element: /^[A-Za-z][A-Za-z\d]*$/,
-      plugin: /^[A-Za-z][A-Za-z\d]*$/, 
+      plugin: /^[A-Za-z][A-Za-z\d]*$/,
       image: /\.(png|jpg)$/,
       zip: /\.(zip)$/
     },
@@ -22,7 +22,7 @@ var sparkl = {};
     });
     return acc;
   }
-  
+
 
   myself.changeLocation = function (newLocation, bookmarks, isNew){
   if(!newLocation){ return; }
@@ -48,7 +48,7 @@ var sparkl = {};
   myself.isValidName = function (name, type){
     var reg = _settings.expressions[ type || 'plugin' ] || /.*/;
     return reg.test(name);
-  }  
+  }
 
 
   myself.isUpdated = function ( srcVersion , pluginVersion ){
@@ -58,7 +58,7 @@ var sparkl = {};
 
   myself.isJobError = function(json){
     return (json && json.result === false );
-  }   
+  }
 
   myself.hasUploaderComponent = function (){
     return !(typeof FileUploaderComponent == 'undefined')
@@ -100,7 +100,7 @@ var sparkl = {};
       resultset: []
     }
     return emptyData;
-  }  
+  }
 
 
 myself.addUploadForm = function(ph, opts){
@@ -269,14 +269,14 @@ myself.addUploadForm = function(ph, opts){
       data: {
         'publish': 'now',
         'class': 'org.pentaho.platform.plugin.services.pluginmgr.PluginAdapter'
-      },                
+      },
       success: callback
     });
   }
 
   myself.addCallWrapper = function ( caller , callback){
-    return function (json) { 
-      caller( callback ); 
+    return function (json) {
+      caller( callback );
     };
   };
   myself.addRefreshWrapper = function (pluginId, callback){
@@ -284,7 +284,7 @@ myself.addUploadForm = function(ph, opts){
     return this.addCallWrapper( caller, callback );
   }
   myself.addPublishWrapper = function (callback){
-    // HACK: This call is only here because cpk is acting weird after a publish. Remove when bug 
+    // HACK: This call is only here because cpk is acting weird after a publish. Remove when bug
     // on cpk is found!!!
     var cb = function (){
       $.ajax({
@@ -328,7 +328,7 @@ myself.addUploadForm = function(ph, opts){
         $.fn.dataTableExt.oSort[this.name+'-asc'] = $.fn.dataTableExt.oSort['string-asc'];
         $.fn.dataTableExt.oSort[this.name+'-desc'] = $.fn.dataTableExt.oSort['string-desc'];
     },
-    
+
     implementation: function(tgt, st, opt){
       var $buttonContainer = $('<div/>').addClass('buttonContainer')
         .addClass('numButtons-' + opt.buttons.length);
@@ -347,8 +347,8 @@ myself.addUploadForm = function(ph, opts){
 
     };
     Dashboards.registerAddIn("Table", "colType", new AddIn(actionButtonsOpts));
-  
-  
+
+
 /* edit data of table  */
   var editable = {
   name: "editable",
@@ -359,7 +359,7 @@ myself.addUploadForm = function(ph, opts){
     }
   },
   init: function(){
-    
+
     // Register this for datatables sort
     var myself = this;
     $.fn.dataTableExt.oSort[this.name+'-asc'] = function(a,b){
@@ -367,11 +367,11 @@ myself.addUploadForm = function(ph, opts){
     };
     $.fn.dataTableExt.oSort[this.name+'-desc'] = function(a,b){
     return myself.sort(b,a)
-    };   
-  }, 
+    };
+  },
   sort: function(a,b){
     return this.sumStrArray(a) - this.sumStrArray(b);
-  }, 
+  },
 
   implementation: function (tgt, st, opt) {
     var t = $(tgt);
@@ -386,11 +386,11 @@ myself.addUploadForm = function(ph, opts){
       var obj = this.parentNode.parentNode.children[0].textContent;
       metadataParam[obj.toString()] = $(this).val();
     });
-    
+
     t.empty();
     t.append(text);
   }
   };
   Dashboards.registerAddIn("Table", "colType", new AddIn(editable));
-  
+
 })();

@@ -1,0 +1,93 @@
+<DesignerComponents>
+    <DesignerComponent>
+        <Header>
+            <Name>Button Call Endpoint Component</Name>
+            <IName>ButtonCallEndpoint</IName>
+            <Description>Button Call Endpoint Component</Description>
+            <Category>CUSTOMCOMPONENTS</Category>
+            <CatDescription>Custom</CatDescription>
+            <Type>PalleteEntry</Type>
+            <Version>1.0</Version>
+        </Header>
+        <Contents>
+            <Model>
+                <!-- copied from Button Component -->
+                <Property>label</Property>
+                <Property>htmlObject</Property>
+                <Property name="buttonStyle">tableStyle</Property>
+                <!-- <Property>expression</Property> -->
+                <Property>executeAtStart</Property>
+                <Property>preExecution</Property>
+                <Property>postExecution</Property>
+                <Property>refreshPeriod</Property>
+                <Property>tooltip</Property>
+                <!-- properties specific of CallEndpoint component -->
+                <Property name="parameters">valuesArray</Property>
+                <Property>successCallback</Property>
+                <Property>failureCallback</Property>
+                <Property name="endpoint">dataSource</Property>
+            </Model>
+            <Implementation>
+                <Code src="ButtonCallEndpoint.js" />
+                <Dependencies>
+                    <Dependency src="sparkl.js" version="1.0">Sparkl Javascript Library</Dependency>
+                    <!--Dependency src="ButtonCallEndpoint.js" version="1.0">The Component</Dependency-->
+                </Dependencies>
+                <CustomProperties>
+                    <DesignerProperty>
+                        <Header>
+                            <Name>pluginId</Name>
+                            <Parent>BaseProperty</Parent>
+                            <DefaultValue></DefaultValue>
+                            <Description>pluginID</Description>
+                            <Tooltip>The name of the plugin that the contains the endpoint to be called</Tooltip>
+                            <InputType>String</InputType>
+                            <OutputType>String</OutputType>
+                            <Order>11</Order>
+                            <Version>1.0</Version>
+                        </Header>
+                    </DesignerProperty>
+                    <DesignerProperty>
+                        <Header>
+                            <Name>endpoint</Name>
+                            <Parent>BaseProperty</Parent>
+                            <DefaultValue></DefaultValue>
+                            <Description>Endpoint</Description>
+                            <Tooltip>The name of the endpoint to be called</Tooltip>
+                            <InputType>String</InputType>
+                            <OutputType>String</OutputType>
+                            <Order>11</Order>
+                            <Version>1.0</Version>
+                        </Header>
+                    </DesignerProperty>
+                    <DesignerProperty>
+                        <Header>
+	                        <Name>successCallback</Name>
+	                        <Parent>BaseProperty</Parent>
+	                        <DefaultValue></DefaultValue>
+	                        <Description>Success Callback</Description>
+	                        <Tooltip>Javascript expression to be evaluated if the call to the endpoint is successful.</Tooltip>
+	                        <InputType>JavaScript</InputType>
+	                        <OutputType>Function</OutputType>
+	                        <Order>40</Order>
+	                        <Version>1.0</Version>
+                        </Header>
+                    </DesignerProperty>
+                    <DesignerProperty>
+                        <Header>
+	                        <Name>failureCallback</Name>
+	                        <Parent>BaseProperty</Parent>
+	                        <DefaultValue></DefaultValue>
+	                        <Description>Failure Callback</Description>
+	                        <Tooltip>Javascript expression to be evaluated  if the call to the endpoint fails or returns an error.</Tooltip>
+	                        <InputType>JavaScript</InputType>
+	                        <OutputType>Function</OutputType>
+	                        <Order>40</Order>
+	                        <Version>1.0</Version>
+                        </Header>
+                    </DesignerProperty>
+                </CustomProperties>
+            </Implementation>
+        </Contents>
+    </DesignerComponent>
+</DesignerComponents>
