@@ -1,66 +1,113 @@
 var CpkComponent = UnmanagedComponent.extend({
     _docstring: function (){
-    /***
-     CpkComponent: abstract class that calls a CPK endpoint
+    /*** CpkComponent: abstract class that calls a CPK endpoint
 
+     Uses a UnmanagedComponent.synchronous() lifecycle.
+     Properties a child class should define in their component.xml:
+
+     <Property name="parameters">valuesArray</Property>
+     <Property>successCallback</Property> (function)
+     <Property>failureCallback</Property> (function)
+     <Definition name="queryDefinition">
+         <Property type="query">dataSource</Property>
+     </Definition>
+
+     Each descendent is expected to override the following methods:
+     - draw()
+
+     Quirks:
+     - in this.parameters, static values should be quoted, in order to survive the "eval" in Dashboards.getParameterValue:
 
      ***/
         return this.help(this._docstring);
     },
     update: function () {
-        /**
-         CpkComponent.update: manage the actions
-         */
-        var qd = this.queryDefinition,
-            cd = this.chartDefinition;
-
-        if ( this.valuesArray && this.valuesArray.length > 0) {
-            var handler = _.bind(function() {
-                this.draw(this.valuesArray);
-            },this);
-            this.synchronous(handler);
-        } else if (qd) {
-            var handler = _.bind(function(data){
-                var filtered;
-                if(this.valueAsId) {
-                    filtered = data.resultset.map(function(e){
-                        return [e[0],e[0]];
-                    });
-                } else {
-                    filtered = data.resultset;
-                }
-                this.draw(filtered);
-            },this);
-            this.triggerQuery(qd,handler);
+        /***
+         CpkComponent.update: entry-point of the component, manages the actions
+         ***/
+        var draw = _.bind(this.draw, this);
+        if(typeof this.manageCallee == "undefined" || this.manageCallee) {
+            this.synchronous(draw);
         } else {
-            /* Legacy XAction-based components are a wasps' nest, so
-             * we'll steer clearfrom updating those for the time being
-             */
-            var handler = _.bind(function() {
-                var data = this.getValuesArray();
-                this.draw(data);
-            },this);
-            this.synchronous(handler);
+            draw();
+        }
+
+    },
+    _queryEngine: "cpk",
+    runEndpoint: function () {
+        /***
+         CpkComponent.runEndpoint: call the endpoint, passing any parameters
+
+         Depends on sparkl.js
+        ***/
+        var qd = this.queryDefinition,
+            params = Dashboards.propertiesArrayToObject( this.parameters );
+
+        _.each( params , function (value, name) {
+            value = Dashboards.getParameterValue(value);
+            if($.isArray(value) && value.length == 1 && ('' + value[0]).indexOf(';') >= 0){
+                //special case where single element will wrongly be treated as a parseable array by cda
+                value = doCsvQuoting(value[0],';');
+            }
+            //else will not be correctly handled for functions that return arrays
+            if (typeof value == 'function') {
+                value = value();
+            }
+            if ($.isArray(value)){ //Introduced by CR
+                value = value.toString();
+            }
+            params[name] = value;
+        });
+
+
+        if (qd.queryType == "cpk") {
+            switch (this._queryEngine){
+            case "core":
+                _.each( params , function (value, name) {
+                    params[name] = value.toString().quote(); //must quote for some mystic reason
+                });
+                return Dashboards.getQuery(qd).fetchData(params, this.successCallback, this.failureCallback);
+            default:
+                var opts = {
+                    success: this.successCallback,
+                    error: this.failureCallback,
+                    params: params
+                };
+
+                return sparkl.runEndpoint( qd.pluginId, qd.endpoint, opts );
+
+            }
+        } else {
+            Dashboards.log('Datasource is not a CPK endpoint', 'error');
+        }
+        if (Dashboards.debug) {
+            Dashboards.log('CpkComponent.runEndpoint was called', 'debug');
         }
     },
 
 
-    runEndpoint: function (){
-
-    },
-
     help: function (fun) {
-        /**
+        /***
          Prints the help text of a function.
 
          Arguments:
          fun -- The function (or alternatively an object with help defined)
-         */
+         ***/
+        /*
 
+         It's nice because you can do extend it to do this (not always desired):
+
+         var global = (function () { return this; })();
+         Function.prototype.toString = function () { help(global[this.name]); }
+
+         Then everytime you just type the function and hit enter you will get the documentation.
+         Function.prototype.doc = function () { help(global[this.name]); }
+         Would create a doc() method for all functions.﻿
+         */
         fun = this[fun];
         if (fun === undefined)
             //return Dashboards.log("What function do you need help with?");
-            fun = this;
+            fun = this._docstring;
 
         if (!(fun instanceof Function)) {
             if (fun.help)
@@ -69,7 +116,7 @@ var CpkComponent = UnmanagedComponent.extend({
         }
 
         var sf = new String(fun);
-        var matches = sf.match(/\/\*\*([\s\S]*)\*\//m); // /** */
+        var matches = sf.match(/\/\*\*\*([\s\S]*)\*\*\*\//m);
 
         if (matches)
             return Dashboards.log(matches[1]);
@@ -79,38 +126,14 @@ var CpkComponent = UnmanagedComponent.extend({
 });
 
 
+
 var ButtonCallEndpoint = CpkComponent.extend({
-    draw : function() {
-        // adapted from pentaho-cdf/js/components/input.js:ButtonComponent
+    /*** ButtonCallEndpoint: a Button Component that calls an endpoint when clicked
+     ***/
+    draw: function() {
         var myself = this;
-        var opts = {
-            success: function (data, textStatus, jqXHR){
-                Dashboards.log( myself.pluginId + ': ' + myself.endpoint + ' ran successfully.');
-                if (myself.successCallback){
-                    //return myself.successCallback.apply(myself, data, textStatus, jqXHR);
-                    return myself.successCallback(data, textStatus, jqXHR);
-                }
-            },
-            error: function (data, textStatus, jqXHR){
-                Dashboards.log( myself.pluginId + ': error running ' + myself.endpoint + '.');
-                if (myself.failureCallback){
-                    //return myself.failureCallback.apply(myself, data, textStatus, jqXHR);
-                    return myself.failureCallback(data, textStatus, jqXHR);
-                }
-            },
-            params: {},
-            systemParams: {},
-            type: 'POST',
-            dataType: 'json'
-        };
-        // _.each(this.parameters, function f(v){
-        //     opts.params[v[0]] = v[1];
-        // });
-
-        opts.params = Dashboards.propertiesArrayToObject(this.parameters);
-
         var b = $("<button type='button'/>").text(this.label).unbind("click").bind("click", function(){
-            return sparkl.runEndpoint( myself.pluginId, myself.endpoint, opts );
+            return myself.runEndpoint.apply(myself);
         });
         if (typeof this.buttonStyle === "undefined" || this.buttonStyle === "themeroller")
             b.button();
@@ -119,28 +142,28 @@ var ButtonCallEndpoint = CpkComponent.extend({
 
 });
 
-/*
 
-    buildQueryDefinition: function(overrides) {
-      overrides = ( overrides instanceof Array) ? Dashboards.propertiesArrayToObject(overrides) : ( overrides || {} );
-      var queryDefinition = $.extend(true, {}, this.getOption('systemParams'));
+// from CoreQueries: CpkEndpoint
 
-      var cachedParams = this.getOption('params'),
-          params = $.extend( {}, cachedParams , overrides);
+    // buildQueryDefinition: function(overrides) {
+    //   overrides = ( overrides instanceof Array) ? Dashboards.propertiesArrayToObject(overrides) : ( overrides || {} );
+    //   var queryDefinition = $.extend(true, {}, this.getOption('systemParams'));
 
-      _.each( params , function (value, name) {
-        value = Dashboards.getParameterValue(value);
-        if($.isArray(value) && value.length == 1 && ('' + value[0]).indexOf(';') >= 0){
-          //special case where single element will wrongly be treated as a parseable array by cda
-          value = doCsvQuoting(value[0],';');
-        }
-        //else will not be correctly handled for functions that return arrays
-        if (typeof value == 'function') {
-          value = value();
-        }
-        queryDefinition['param' + name] = value;
-      });
+    //   var cachedParams = this.getOption('params'),
+    //       params = $.extend( {}, cachedParams , overrides);
 
-      return queryDefinition;
-    }
-*/
+    //   _.each( params , function (value, name) {
+    //     value = Dashboards.getParameterValue(value);
+    //     if($.isArray(value) && value.length == 1 && ('' + value[0]).indexOf(';') >= 0){
+    //       //special case where single element will wrongly be treated as a parseable array by cda
+    //       value = doCsvQuoting(value[0],';');
+    //     }
+    //     //else will not be correctly handled for functions that return arrays
+    //     if (typeof value == 'function') {
+    //       value = value();
+    //     }
+    //     queryDefinition['param' + name] = value;
+    //   });
+
+    //   return queryDefinition;
+    // }

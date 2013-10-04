@@ -22,10 +22,15 @@
                 <Property>refreshPeriod</Property>
                 <Property>tooltip</Property>
                 <!-- properties specific of CallEndpoint component -->
-                <Property name="parameters">valuesArray</Property>
-                <Property>successCallback</Property>
-                <Property>failureCallback</Property>
-                <Property name="endpoint">dataSource</Property>
+
+                    <Property name="parameters">valuesArray</Property>
+                    <Property>successCallback</Property>
+                    <Property>failureCallback</Property>
+
+
+                <Definition name="queryDefinition">
+                    <Property type="query">dataSource</Property>
+                </Definition>
             </Model>
             <Implementation>
                 <Code src="ButtonCallEndpoint.js" />
@@ -34,32 +39,6 @@
                     <!--Dependency src="ButtonCallEndpoint.js" version="1.0">The Component</Dependency-->
                 </Dependencies>
                 <CustomProperties>
-                    <DesignerProperty>
-                        <Header>
-                            <Name>pluginId</Name>
-                            <Parent>BaseProperty</Parent>
-                            <DefaultValue></DefaultValue>
-                            <Description>pluginID</Description>
-                            <Tooltip>The name of the plugin that the contains the endpoint to be called</Tooltip>
-                            <InputType>String</InputType>
-                            <OutputType>String</OutputType>
-                            <Order>11</Order>
-                            <Version>1.0</Version>
-                        </Header>
-                    </DesignerProperty>
-                    <DesignerProperty>
-                        <Header>
-                            <Name>endpoint</Name>
-                            <Parent>BaseProperty</Parent>
-                            <DefaultValue></DefaultValue>
-                            <Description>Endpoint</Description>
-                            <Tooltip>The name of the endpoint to be called</Tooltip>
-                            <InputType>String</InputType>
-                            <OutputType>String</OutputType>
-                            <Order>11</Order>
-                            <Version>1.0</Version>
-                        </Header>
-                    </DesignerProperty>
                     <DesignerProperty>
                         <Header>
 	                        <Name>successCallback</Name>
