@@ -4,8 +4,8 @@
             <Name>Button Call Endpoint Component</Name>
             <IName>ButtonCallEndpoint</IName>
             <Description>Button Call Endpoint Component</Description>
-            <Category>CUSTOMCOMPONENTS</Category>
-            <CatDescription>Custom</CatDescription>
+            <Category>SPARKLCOMPONENTS</Category>
+            <CatDescription>Sparkl components</CatDescription>
             <Type>PalleteEntry</Type>
             <Version>1.0</Version>
         </Header>
@@ -22,15 +22,14 @@
                 <Property>refreshPeriod</Property>
                 <Property>tooltip</Property>
                 <!-- properties specific of CallEndpoint component -->
-
+                <!--Definition name="cpk" -->
                     <Property name="parameters">valuesArray</Property>
                     <Property>successCallback</Property>
                     <Property>failureCallback</Property>
-
-
-                <Definition name="queryDefinition">
-                    <Property type="query">dataSource</Property>
-                </Definition>
+                    <Definition name="queryDefinition">
+                        <Property type="query">dataSource</Property>
+                    </Definition>
+                <!--/Definition-->
             </Model>
             <Implementation>
                 <Code src="ButtonCallEndpoint.js" />

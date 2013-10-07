@@ -10,7 +10,7 @@ var sparkl = sparkl || {};
         }
 
         var _opts = {
-            // we might want to change success-> done and error->fail when we start using jQuery 1.8+
+            // NOTE: we might want to change success-> done and error->fail when we start using jQuery 1.8+
             success: function (){
                 Dashboards.log( pluginId + ': ' + endpoint + ' ran successfully.');
             },
@@ -18,33 +18,17 @@ var sparkl = sparkl || {};
                 Dashboards.log( pluginId + ': error running ' + endpoint + '.');
             },
             params: {},
-            systemParams: {},
-            type: 'POST',
-            dataType: 'json'
+            systemParams: {} // NOTE: these are not being handled by coreQueries.js/CpkEndpoint
         };
         var opts = $.extend( {}, _opts, opts);
-        var url = Dashboards.getWebAppPath() + '/content/' + pluginId + '/' + endpoint;
 
-        function successHandler (json) {
-            if ( json && json.result == false ) {
-                opts.error.apply(this, arguments);
-            } else {
-                opts.success.apply( this, arguments );
-            }
-        }
-
-        function errorHandler (){
-            opts.error.apply(this, arguments);
-        }
-
-        // Uses coreQueries.js
+        var params = Dashboards.propertiesArrayToObject( opts.params );
         var qd = {
             endpoint: endpoint,
             pluginId: pluginId,
             queryType: 'cpk'
         };
-        var params = Dashboards.propertiesArrayToObject( opts.params );
-        Dashboards.getQuery(qd).fetchData(params, successHandler, errorHandler);
+        Dashboards.getQuery(qd).fetchData(params, opts.success, opts.error);
 
     };
 
