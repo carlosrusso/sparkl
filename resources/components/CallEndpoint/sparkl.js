@@ -64,14 +64,12 @@ var sparkl = sparkl || {};
          /*** CpkComponent: abstract class that calls a CPK endpoint
 
           Uses a UnmanagedComponent.synchronous() lifecycle.
-          Properties a child class should define in their component.xml:
+          Methods/properties defined in CDE for all child classes:
 
-          <Property name="parameters">valuesArray</Property>
-          <Property>successCallback</Property> (function)
-          <Property>failureCallback</Property> (function)
-          <Definition name="queryDefinition">
-          <Property type="query">dataSource</Property>
-          </Definition>
+          this.parameters
+          this.successCallback(data)
+          this.failureCallback()
+          this.queryDefinition (info on endpooint)
 
           Each descendent is expected to override the following methods:
           - draw()
@@ -97,8 +95,6 @@ var sparkl = sparkl || {};
      runEndpoint: function () {
          /***
           CpkComponent.runEndpoint: call the endpoint, passing any parameters
-
-          Depends on sparkl.js
           ***/
          var qd = this.queryDefinition,
              params = Dashboards.propertiesArrayToObject( this.parameters );
@@ -123,7 +119,7 @@ var sparkl = sparkl || {};
           ***/
          /*
 
-          It's nice because you can do extend it to do this (not always desired):
+          It's nice because you can  extend it to do this (not always desired):
 
           var global = (function () { return this; })();
           Function.prototype.toString = function () { help(global[this.name]); }
@@ -146,8 +142,13 @@ var sparkl = sparkl || {};
          var sf = new String(fun);
          var matches = sf.match(/\/\*\*\*([\s\S]*)\*\*\*\//m);
 
-         if (matches)
-             return Dashboards.log(matches[1]);
+         if (matches){
+             // remove all whitespace cause by indenting the code
+             var h = _.map( matches[1].split('\n'),
+                        function (s) {return s.trim();}
+                      ).join('\n');
+             return Dashboards.log(h);
+         }
 
          return Dashboards.log("I can not help you with that function.");
      }
